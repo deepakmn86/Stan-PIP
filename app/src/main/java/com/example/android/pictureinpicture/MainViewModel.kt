@@ -16,30 +16,19 @@
 
 package com.example.android.pictureinpicture
 
-import android.os.SystemClock
 import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.map
-import androidx.lifecycle.viewModelScope
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.android.awaitFrame
-import kotlinx.coroutines.isActive
-import kotlinx.coroutines.launch
-import kotlin.time.Duration
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 
-class MainViewModel: ViewModel() {
+@HiltViewModel
+class MainViewModel @Inject constructor(
+    private val stopwatchRepository: StopwatchRepository
+): ViewModel() {
 
-    private var job: Job? = null
-
-    private var startUptimeMillis = SystemClock.uptimeMillis()
-    private val timeMillis = MutableLiveData(0L)
-
-    private val _started = MutableLiveData(false)
-
-    val started: LiveData<Boolean> = _started
-    val time = timeMillis.map { millis ->
+    val started: LiveData<Boolean> = stopwatchRepository.started
+    val time = stopwatchRepository.timeMillis.map { millis ->
         val minutes = millis / 1000 / 60
         val m = minutes.toString().padStart(2, '0')
         val seconds = (millis / 1000) % 60
@@ -53,29 +42,13 @@ class MainViewModel: ViewModel() {
      * Starts the stopwatch if it is not yet started, or pauses it if it is already started.
      */
     fun startOrPause() {
-        if (_started.value == true) {
-            _started.value = false
-            job?.cancel()
-        } else {
-            _started.value = true
-            job = viewModelScope.launch { start() }
-        }
-    }
-
-    private suspend fun CoroutineScope.start() {
-        startUptimeMillis = SystemClock.uptimeMillis() - (timeMillis.value ?: 0L)
-        while (isActive) {
-            timeMillis.value = SystemClock.uptimeMillis() - startUptimeMillis
-            // Updates on every render frame.
-            awaitFrame()
-        }
+        stopwatchRepository.startOrPause()
     }
 
     /**
      * Clears the stopwatch to 00:00:00.
      */
     fun clear() {
-        startUptimeMillis = SystemClock.uptimeMillis()
-        timeMillis.value = 0L
+        stopwatchRepository.clear()
     }
 }

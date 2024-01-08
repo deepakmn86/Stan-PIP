@@ -33,10 +33,13 @@ import androidx.activity.viewModels
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import com.example.android.pictureinpicture.databinding.MainActivityBinding
+import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.launch
 
 /** Intent action for stopwatch controls from Picture-in-Picture mode.  */
@@ -53,6 +56,7 @@ private const val REQUEST_START_OR_PAUSE = 4
 /**
  * Demonstrates usage of Picture-in-Picture mode on phones and tablets.
  */
+@AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
 
     private val viewModel: MainViewModel by viewModels()
@@ -75,6 +79,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    @OptIn(ExperimentalCoroutinesApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = MainActivityBinding.inflate(layoutInflater)
@@ -107,7 +112,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         // Handle events from the action icons on the picture-in-picture mode.
-        registerReceiver(broadcastReceiver, IntentFilter(ACTION_STOPWATCH_CONTROL))
+        ContextCompat.registerReceiver(this, broadcastReceiver, IntentFilter(ACTION_STOPWATCH_CONTROL), ContextCompat.RECEIVER_NOT_EXPORTED)
     }
 
     // This is called when the activity gets into or out of the picture-in-picture mode.
