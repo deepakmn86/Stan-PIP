@@ -6,3 +6,6 @@
 ### Task 3
 - Added Dependency Injection support using Hilt
 - Created a repository to handle the stopwatch timer so that it can run independent of the MainActivity, but still can be controlled by MainActivity.
+
+### Task 2
+- Added unit tests for MainViewModel
